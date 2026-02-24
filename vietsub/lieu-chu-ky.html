@@ -1,0 +1,319 @@
+<div id="player-wrapper">
+
+<!-- ====== CHỈ DÁN LINK Ở ĐÂY ====== -->
+<script>
+const rawEpisodes = `
+Tập 01|https://s6.kkphimplayer6.com/20260126/2McHsiWL/index.m3u8
+Tập 02|https://s6.kkphimplayer6.com/20260126/Q7JiAQun/index.m3u8
+Tập 03|https://s6.kkphimplayer6.com/20260126/mvR9hfHP/index.m3u8
+Tập 04|https://s6.kkphimplayer6.com/20260126/YeyEE4Uy/index.m3u8
+Tập 05|https://s6.kkphimplayer6.com/20260126/Z9c8xNN7/index.m3u8
+Tập 06|https://s6.kkphimplayer6.com/20260126/UEZhx9Kd/index.m3u8
+Tập 07|https://s6.kkphimplayer6.com/20260126/PXTaVfLl/index.m3u8
+Tập 08|https://s6.kkphimplayer6.com/20260126/YVx6TGCo/index.m3u8
+Tập 09|https://s6.kkphimplayer6.com/20260126/zBSMFWpp/index.m3u8
+Tập 10|https://s6.kkphimplayer6.com/20260126/rMH1mvPu/index.m3u8
+Tập 11|https://s6.kkphimplayer6.com/20260126/K61unrvw/index.m3u8
+Tập 12|https://s6.kkphimplayer6.com/20260126/jJGF0dFC/index.m3u8
+Tập 13|https://s6.kkphimplayer6.com/20260126/nR7wU0tQ/index.m3u8
+Tập 14|https://s6.kkphimplayer6.com/20260126/HVktt4bY/index.m3u8
+Tập 15|https://s6.kkphimplayer6.com/20260126/TcwsQWTd/index.m3u8
+Tập 16|https://s6.kkphimplayer6.com/20260126/hjLOAXNe/index.m3u8
+Tập 17|https://s6.kkphimplayer6.com/20260126/7CF4MEGr/index.m3u8
+Tập 18|https://s6.kkphimplayer6.com/20260126/4YqB6ZFf/index.m3u8
+Tập 19|https://s6.kkphimplayer6.com/20260126/UnCErVCg/index.m3u8
+Tập 20|https://s6.kkphimplayer6.com/20260126/dyU3R52W/index.m3u8
+Tập 21|https://s6.kkphimplayer6.com/20260126/1kX4F4on/index.m3u8
+Tập 22|https://s6.kkphimplayer6.com/20260126/C4R3YUdZ/index.m3u8
+Tập 23|https://s6.kkphimplayer6.com/20260126/TdY8igmI/index.m3u8
+Tập 24|https://s6.kkphimplayer6.com/20260126/EHvr0TUg/index.m3u8
+Tập 25|https://s6.kkphimplayer6.com/20260126/TwsvLTH4/index.m3u8
+Tập 26|https://s6.kkphimplayer6.com/20260126/JzsTnSRL/index.m3u8
+Tập 27|https://s6.kkphimplayer6.com/20260126/MlyH66TH/index.m3u8
+Tập 28|https://s6.kkphimplayer6.com/20260126/nHDokYdc/index.m3u8
+Tập 29|https://s6.kkphimplayer6.com/20260126/qckgNeRD/index.m3u8
+Tập 30|https://s6.kkphimplayer6.com/20260126/q8kY8iAY/index.m3u8
+Tập 31|https://s6.kkphimplayer6.com/20260126/ZHt6eXMn/index.m3u8
+Tập 32|https://s6.kkphimplayer6.com/20260126/zozXNyID/index.m3u8
+Tập 33|https://s6.kkphimplayer6.com/20260126/GewauSps/index.m3u8
+Tập 34|https://s6.kkphimplayer6.com/20260126/VuS7iBcQ/index.m3u8
+Tập 35|https://s6.kkphimplayer6.com/20260126/VIxPmN9E/index.m3u8
+Tập 36|https://s6.kkphimplayer6.com/20260126/KttW6XWM/index.m3u8
+Tập 37|https://s6.kkphimplayer6.com/20260126/qtw7FJGG/index.m3u8
+Tập 38|https://s6.kkphimplayer6.com/20260126/IWDxXOw7/index.m3u8
+Tập 39|https://s6.kkphimplayer6.com/20260126/Y9113XjK/index.m3u8
+Tập 40|https://s6.kkphimplayer6.com/20260126/9ZUheEN3/index.m3u8
+Tập 01|https://s3.phim1280.tv/20240814/gHAsAhAN/index.m3u8
+Tập 02|https://s3.phim1280.tv/20240814/HfYTwQvd/index.m3u8
+Tập 03|https://s3.phim1280.tv/20240814/5qENHCfE/index.m3u8
+Tập 04|https://s3.phim1280.tv/20240814/M7VD2EI1/index.m3u8
+Tập 05|https://s3.phim1280.tv/20240814/b8V9Jp2R/index.m3u8
+Tập 06|https://s3.phim1280.tv/20240814/hWGIKMwY/index.m3u8
+Tập 07|https://s3.phim1280.tv/20240815/O4PQR5td/index.m3u8
+Tập 08|https://s3.phim1280.tv/20240815/tJPhs3yF/index.m3u8
+Tập 09|https://s3.phim1280.tv/20240815/sUGkHPkC/index.m3u8
+Tập 10|https://s3.phim1280.tv/20240815/JvT3Myn0/index.m3u8
+Tập 11|https://s3.phim1280.tv/20240817/xoB3GZb4/index.m3u8
+Tập 12|https://s3.phim1280.tv/20240817/Y8gPRfjC/index.m3u8
+Tập 13|https://s3.phim1280.tv/20240818/CwKfBT4O/index.m3u8
+Tập 14|https://s3.phim1280.tv/20240818/NQoyJ2fQ/index.m3u8
+Tập 15|https://s3.phim1280.tv/20240818/uqXtEw7Z/index.m3u8
+Tập 16|https://s3.phim1280.tv/20240818/niSTXnFi/index.m3u8
+Tập 17|https://s3.phim1280.tv/20240820/2dlv91Yv/index.m3u8
+Tập 18|https://s3.phim1280.tv/20240820/sZTvc9Xt/index.m3u8
+Tập 19|https://s3.phim1280.tv/20240820/XGGsj7lz/index.m3u8
+Tập 20|https://s3.phim1280.tv/20240822/ZhURM1hY/index.m3u8
+Tập 21|https://s3.phim1280.tv/20240822/Ut0fS4uX/index.m3u8
+Tập 22|https://s3.phim1280.tv/20240822/3TTMJnZq/index.m3u8
+Tập 23|https://s3.phim1280.tv/20240823/OLr2Av8M/index.m3u8
+Tập 24|https://s3.phim1280.tv/20240824/Yx9sDeAE/index.m3u8
+Tập 25|https://s3.phim1280.tv/20240824/CKZcbEuV/index.m3u8
+Tập 26|https://s3.phim1280.tv/20240827/pTSj51CB/index.m3u8
+Tập 27|https://s3.phim1280.tv/20240827/dTmpQ7Qt/index.m3u8
+Tập 28|https://s3.phim1280.tv/20240827/wQSf651s/index.m3u8
+Tập 29|https://s3.phim1280.tv/20240827/9hlCDIKQ/index.m3u8
+Tập 30|https://s3.phim1280.tv/20240828/LyUkggHx/index.m3u8
+Tập 31|https://s3.phim1280.tv/20240830/xSSw85fe/index.m3u8
+Tập 32|https://s3.phim1280.tv/20240830/ld3KSTPe/index.m3u8
+Tập 33|https://s4.phim1280.tv/20240901/fnnibIy3/index.m3u8
+Tập 34|https://s4.phim1280.tv/20240901/cUrHWf82/index.m3u8
+Tập 35|https://s4.phim1280.tv/20240901/v97qOGEf/index.m3u8
+Tập 36|https://s4.phim1280.tv/20240901/Ypab86RS/index.m3u8
+Tập 37|https://s4.phim1280.tv/20240903/GqmNWdRo/index.m3u8
+Tập 38|https://s4.phim1280.tv/20240903/eEs6nznc/index.m3u8
+Tập 39|https://s4.phim1280.tv/20240903/QvM2mCLk/index.m3u8
+Tập 40|https://s4.phim1280.tv/20240903/htWeS07t/index.m3u8
+
+`;
+</script>
+<!-- ================================ -->
+
+<div class="video-container" id="videoContainer">
+
+<video id="video" controls></video>
+
+<div class="controls-overlay" id="controlsOverlay">
+<button onclick="prevEpisode()">⏮</button>
+<button onclick="skip(-30)">⏪ 30s</button>
+<button onclick="skip(30)">30s ⏩</button>
+<button onclick="nextEpisode()">⏭</button>
+<button onclick="toggleCinema()">🔍</button>
+<button onclick="toggleFull()">🖥</button>
+</div>
+
+</div>
+
+<div id="episode-list"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<style>
+#player-wrapper{
+max-width:1200px;
+margin:auto;
+}
+
+.video-container{
+position:relative;
+width:100%;
+background:#000;
+overflow:hidden;
+}
+
+video{
+width:100%;
+height:auto;
+display:block;
+background:#000;
+}
+
+.controls-overlay{
+position:absolute;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+display:flex;
+gap:10px;
+background:rgba(0,0,0,0.6);
+padding:10px 15px;
+border-radius:10px;
+transition:opacity 0.3s ease;
+}
+
+.controls-overlay button{
+background:#111;
+color:#fff;
+border:none;
+padding:8px 12px;
+cursor:pointer;
+border-radius:6px;
+}
+
+.controls-hidden{
+opacity:0;
+pointer-events:none;
+}
+
+#episode-list{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+padding:15px 0;
+justify-content:center;
+}
+
+#episode-list button{
+padding:8px 14px;
+background:#222;
+color:#fff;
+border:none;
+cursor:pointer;
+border-radius:4px;
+}
+
+#episode-list button.active{
+background:#e50914;
+}
+
+/* ===== FULL CINEMA MODE ===== */
+.cinema-mode{
+position:fixed !important;
+top:0;
+left:0;
+width:100vw !important;
+height:100vh !important;
+background:#000;
+z-index:99999;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.cinema-mode video{
+width:100vw !important;
+height:100vh !important;
+object-fit:contain;
+}
+
+.cinema-mode #episode-list{
+position:absolute;
+bottom:0;
+background:rgba(0,0,0,0.85);
+width:100%;
+padding:15px;
+}
+</style>
+
+<script>
+let video = document.getElementById("video");
+let episodeList = document.getElementById("episode-list");
+let wrapper = document.getElementById("videoContainer");
+let overlay = document.getElementById("controlsOverlay");
+
+let episodes = [];
+let currentIndex = 0;
+let hls;
+let hideTimeout;
+
+/* PARSE EPISODES */
+function parseEpisodes(){
+let lines = rawEpisodes.trim().split("\n");
+lines.forEach(line=>{
+let parts = line.split("|");
+if(parts.length===2){
+episodes.push({
+title: parts[0].trim(),
+url: parts[1].trim()
+});
+}
+});
+renderEpisodes();
+loadEpisode(0);
+}
+
+function renderEpisodes(){
+episodeList.innerHTML="";
+episodes.forEach((ep,index)=>{
+let btn=document.createElement("button");
+btn.textContent=ep.title;
+btn.onclick=()=>loadEpisode(index);
+if(index===0) btn.classList.add("active");
+episodeList.appendChild(btn);
+});
+}
+
+function loadEpisode(index){
+currentIndex=index;
+
+document.querySelectorAll("#episode-list button")
+.forEach(btn=>btn.classList.remove("active"));
+document.querySelectorAll("#episode-list button")[index]
+.classList.add("active");
+
+if(hls){ hls.destroy(); }
+
+if(Hls.isSupported()){
+hls=new Hls();
+hls.loadSource(episodes[index].url);
+hls.attachMedia(video);
+}else{
+video.src=episodes[index].url;
+}
+
+video.play();
+}
+
+function nextEpisode(){
+if(currentIndex < episodes.length-1){
+loadEpisode(currentIndex+1);
+}
+}
+
+function prevEpisode(){
+if(currentIndex > 0){
+loadEpisode(currentIndex-1);
+}
+}
+
+video.addEventListener("ended",()=>{
+nextEpisode();
+});
+
+function skip(seconds){
+video.currentTime += seconds;
+}
+
+/* FULLSCREEN */
+function toggleFull(){
+if(!document.fullscreenElement){
+wrapper.requestFullscreen();
+}else{
+document.exitFullscreen();
+}
+}
+
+/* CINEMA MODE */
+function toggleCinema(){
+wrapper.classList.toggle("cinema-mode");
+document.body.style.overflow =
+wrapper.classList.contains("cinema-mode") ? "hidden" : "auto";
+}
+
+/* AUTO HIDE AFTER 3s */
+function showControls(){
+overlay.classList.remove("controls-hidden");
+clearTimeout(hideTimeout);
+hideTimeout = setTimeout(()=>{
+overlay.classList.add("controls-hidden");
+},3000);
+}
+
+wrapper.addEventListener("mousemove", showControls);
+wrapper.addEventListener("touchstart", showControls);
+
+parseEpisodes();
+showControls();
+</script>

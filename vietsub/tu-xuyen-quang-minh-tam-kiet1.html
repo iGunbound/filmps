@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+    #video-container { position: relative; max-width: 100%; }
+    #playlist { max-height: 300px; overflow-y: auto; background: #111; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .episode { cursor: pointer; padding: 5px 10px; background: #333; border-radius: 4px; }
+    .episode.active { background: #d00; color: #fff; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 2; }
+    .ctrl-btn { background: rgba(0,0,0,0.5); border: none; color: white; padding: 6px 10px; margin: 0 5px; cursor: pointer; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">⏪ 30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s ⏩</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const episodes = [
+  { title: 'Tập 01', url: 'https://s2.phim1280.tv/20240228/94zVqDzd/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s2.phim1280.tv/20240228/pwtJaw5g/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s2.phim1280.tv/20240228/bfoI56Uk/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s2.phim1280.tv/20240228/ZxRTTon9/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s2.phim1280.tv/20240228/2I4K0sLM/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s2.phim1280.tv/20240228/yx40uqgZ/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s2.phim1280.tv/20240229/UuoviWY6/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s2.phim1280.tv/20240229/6uoSAoPo/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s2.phim1280.tv/20240302/0wflEsNP/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s2.phim1280.tv/20240302/fw0o0h0a/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s2.phim1280.tv/20240305/EhvxDBzm/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s2.phim1280.tv/20240305/4glrsVWl/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s2.phim1280.tv/20240307/zbwgLAP4/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s2.phim1280.tv/20240307/BCj8kdPN/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s2.phim1280.tv/20240307/2xY3v6AX/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s2.phim1280.tv/20240307/AiLyAfkz/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s2.phim1280.tv/20240309/ddckQbsC/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s2.phim1280.tv/20240309/X2WFbGPo/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s2.phim1280.tv/20240312/ZNmC1A0w/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s2.phim1280.tv/20240312/euMf7er2/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s1.phim1280.tv/20240313/rhdc8r1g/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s1.phim1280.tv/20240313/LRE1RbdP/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s2.phim1280.tv/20240315/seOs84J6/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s2.phim1280.tv/20240315/qXphtkOA/index.m3u8' }
+];
+
+    let current = 0;
+    const video = document.getElementById("video");
+    const playlist = document.getElementById("playlist");
+
+    function loadEpisode(index) {
+      current = index;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(episodes[index].url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = episodes[index].url;
+        video.play();
+      }
+      updatePlaylistUI();
+    }
+
+    function updatePlaylistUI() {
+      playlist.innerHTML = '';
+      episodes.forEach((ep, i) => {
+        const btn = document.createElement("div");
+        btn.className = "episode" + (i === current ? " active" : "");
+        btn.innerText = ep.title;
+        btn.onclick = () => loadEpisode(i);
+        playlist.appendChild(btn);
+      });
+    }
+
+    function seek(seconds) {
+      video.currentTime += seconds;
+    }
+
+    video.addEventListener("ended", () => {
+      if (current + 1 < episodes.length) loadEpisode(current + 1);
+    });
+
+    loadEpisode(0);
+  </script>
+</body>
+</html>
