@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+    #video-container { position: relative; max-width: 100%; }
+    #playlist { max-height: 300px; overflow-y: auto; background: #111; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .episode { cursor: pointer; padding: 5px 10px; background: #333; border-radius: 4px; }
+    .episode.active { background: #d00; color: #fff; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 2; }
+    .ctrl-btn { background: rgba(0,0,0,0.5); border: none; color: white; padding: 6px 10px; margin: 0 5px; cursor: pointer; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">⏪ 30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s ⏩</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const episodes = [
+  { title: 'Tập 01', url: 'https://s3.phim1280.tv/20240728/lPtvI31u/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s3.phim1280.tv/20240728/ayqB9mX9/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s3.phim1280.tv/20240728/o09fUmFH/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s3.phim1280.tv/20240728/Q2LA3y69/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s3.phim1280.tv/20240728/7HfvpWgf/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s3.phim1280.tv/20240728/vCq3Hubm/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s3.phim1280.tv/20240728/m8TPeJe1/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s3.phim1280.tv/20240728/7uz3lYKz/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s3.phim1280.tv/20240728/Yca5Cy9e/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s3.phim1280.tv/20240728/qXSJNq1H/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s3.phim1280.tv/20240728/0UXQbAwt/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s3.phim1280.tv/20240728/6uGzamBL/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s3.phim1280.tv/20240728/NDSr7miW/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s3.phim1280.tv/20240728/BDFNRRjV/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s3.phim1280.tv/20240728/S0uEuBy8/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s3.phim1280.tv/20240728/phhWn91t/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s3.phim1280.tv/20240728/I2LgpPwj/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s3.phim1280.tv/20240728/mvBrC1hI/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s3.phim1280.tv/20240728/JDIPVA0Y/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s3.phim1280.tv/20240728/vk7OfE4h/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s3.phim1280.tv/20240728/citkT9Uj/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s3.phim1280.tv/20240728/MjbFm5ud/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s3.phim1280.tv/20240728/X1WSD7dJ/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s3.phim1280.tv/20240728/TKIsmcEW/index.m3u8' },
+  { title: 'Tập 25', url: 'https://s3.phim1280.tv/20240728/NNDEW7xb/index.m3u8' },
+  { title: 'Tập 26', url: 'https://s3.phim1280.tv/20240728/GWQPnOmf/index.m3u8' },
+  { title: 'Tập 27', url: 'https://s3.phim1280.tv/20240728/5bCtI3vz/index.m3u8' },
+  { title: 'Tập 28', url: 'https://s3.phim1280.tv/20240728/XWVkonhr/index.m3u8' },
+  { title: 'Tập 29', url: 'https://s3.phim1280.tv/20240728/SucS3vwn/index.m3u8' },
+  { title: 'Tập 30', url: 'https://s3.phim1280.tv/20240728/bqWi9pjv/index.m3u8' },
+  { title: 'Tập 31', url: 'https://s3.phim1280.tv/20240728/UhsGlSJK/index.m3u8' },
+  { title: 'Tập 32', url: 'https://s3.phim1280.tv/20240728/q7ddAuuK/index.m3u8' },
+  { title: 'Tập 33', url: 'https://s3.phim1280.tv/20240728/1At4vlM7/index.m3u8' },
+  { title: 'Tập 34', url: 'https://s3.phim1280.tv/20240728/RuBuNh4U/index.m3u8' },
+  { title: 'Tập 35', url: 'https://s3.phim1280.tv/20240728/cuYZWA8T/index.m3u8' },
+  { title: 'Tập 36', url: 'https://s3.phim1280.tv/20240728/IyluDQOO/index.m3u8' },
+  { title: 'Tập 37', url: 'https://s3.phim1280.tv/20240728/KBZbk5Ii/index.m3u8' },
+  { title: 'Tập 38', url: 'https://s3.phim1280.tv/20240728/dkkR6fLC/index.m3u8' },
+  { title: 'Tập 39', url: 'https://s3.phim1280.tv/20240728/YSxJgQov/index.m3u8' },
+  { title: 'Tập 40', url: 'https://s3.phim1280.tv/20240728/CKhbqbcs/index.m3u8' },
+  { title: 'Tập 41', url: 'https://s3.phim1280.tv/20240728/WhdKv6k4/index.m3u8' },
+  { title: 'Tập 42', url: 'https://s3.phim1280.tv/20240728/SrOkSKx6/index.m3u8' },
+  { title: 'Tập 43', url: 'https://s3.phim1280.tv/20240728/dQpbv2YG/index.m3u8' },
+  { title: 'Tập 44', url: 'https://s3.phim1280.tv/20240728/Hmdjq7BP/index.m3u8' },
+  { title: 'Tập 45', url: 'https://s3.phim1280.tv/20240728/luswrGOy/index.m3u8' },
+  { title: 'Tập 46', url: 'https://s3.phim1280.tv/20240728/dXGbWM0d/index.m3u8' },
+  { title: 'Tập 47', url: 'https://s3.phim1280.tv/20240728/iPkwOE3N/index.m3u8' },
+  { title: 'Tập 48', url: 'https://s3.phim1280.tv/20240728/6mGMl0jS/index.m3u8' },
+  { title: 'Tập 49', url: 'https://s3.phim1280.tv/20240728/pfojZdNF/index.m3u8' },
+  { title: 'Tập 50', url: 'https://s3.phim1280.tv/20240728/ZULdGJxD/index.m3u8' },
+  { title: 'Tập 51', url: 'https://s3.phim1280.tv/20240728/Y5ONKvPP/index.m3u8' },
+  { title: 'Tập 52', url: 'https://s3.phim1280.tv/20240728/nB7N2a1Q/index.m3u8' },
+  { title: 'Tập 53', url: 'https://s3.phim1280.tv/20240728/0ComjKLO/index.m3u8' },
+  { title: 'Tập 54', url: 'https://s3.phim1280.tv/20240728/3zLRU4KL/index.m3u8' },
+  { title: 'Tập 55', url: 'https://s3.phim1280.tv/20240728/IRTaqp2o/index.m3u8' },
+  { title: 'Tập 56', url: 'https://s4.phim1280.tv/20240929/8GXdoalQ/index.m3u8' },
+  { title: 'Tập 57', url: 'https://s4.phim1280.tv/20240929/FyZBfGCj/index.m3u8' },
+  { title: 'Tập 58', url: 'https://s4.phim1280.tv/20240929/ogGgVenF/index.m3u8' },
+  { title: 'Tập 59', url: 'https://s4.phim1280.tv/20240929/GwYQ50pl/index.m3u8' },
+  { title: 'Tập 60', url: 'https://s4.phim1280.tv/20240929/Sza6JzTN/index.m3u8' },
+  { title: 'Tập 61', url: 'https://s4.phim1280.tv/20240929/XItyntOT/index.m3u8' },
+  { title: 'Tập 62', url: 'https://s4.phim1280.tv/20240929/pG2aN1Nt/index.m3u8' },
+  { title: 'Tập 63', url: 'https://s4.phim1280.tv/20240929/BKpY9QiO/index.m3u8' },
+  { title: 'Tập 64', url: 'https://s4.phim1280.tv/20240929/muTKsldP/index.m3u8' },
+  { title: 'Tập 65', url: 'https://s4.phim1280.tv/20240929/IokS02BK/index.m3u8' },
+  { title: 'Tập 66', url: 'https://s4.phim1280.tv/20240929/SP2GVNjh/index.m3u8' },
+  { title: 'Tập 67', url: 'https://s4.phim1280.tv/20240929/29O2tH6U/index.m3u8' },
+  { title: 'Tập 68', url: 'https://s4.phim1280.tv/20240929/Kqw8OI27/index.m3u8' },
+  { title: 'Tập 69', url: 'https://s4.phim1280.tv/20240929/eZJLgpYG/index.m3u8' },
+  { title: 'Tập 70', url: 'https://s4.phim1280.tv/20240929/xBJffTMN/index.m3u8' },
+  { title: 'Tập 71', url: 'https://s4.phim1280.tv/20240929/z1oDevBH/index.m3u8' },
+  { title: 'Tập 72', url: 'https://s4.phim1280.tv/20240929/79O8fNhF/index.m3u8' },
+  { title: 'Tập 73', url: 'https://s4.phim1280.tv/20240929/2xlfEFG4/index.m3u8' },
+  { title: 'Tập 74', url: 'https://s4.phim1280.tv/20240929/hHOVIQkB/index.m3u8' },
+  { title: 'Tập 75', url: 'https://s4.phim1280.tv/20240929/FSJtsDKW/index.m3u8' },
+  { title: 'Tập 76', url: 'https://s4.phim1280.tv/20240929/6uaNb8D4/index.m3u8' },
+  { title: 'Tập 77', url: 'https://s4.phim1280.tv/20240929/FSn1Yb7o/index.m3u8' },
+  { title: 'Tập 78', url: 'https://s4.phim1280.tv/20240929/eEomqDSS/index.m3u8' },
+  { title: 'Tập 79', url: 'https://s4.phim1280.tv/20240929/vpZNnyBJ/index.m3u8' },
+  { title: 'Tập 80', url: 'https://s4.phim1280.tv/20240929/CC2mRCY5/index.m3u8' },
+  { title: 'Tập 81', url: 'https://s4.phim1280.tv/20240929/ZLurW4dn/index.m3u8' },
+  { title: 'Tập 82', url: 'https://s4.phim1280.tv/20240929/S3Fm5rIs/index.m3u8' },
+  { title: 'Tập 83', url: 'https://s4.phim1280.tv/20240929/h8m17bqX/index.m3u8' },
+  { title: 'Tập 84', url: 'https://s4.phim1280.tv/20240929/0RmREdyI/index.m3u8' },
+  { title: 'Tập 85', url: 'https://s4.phim1280.tv/20240929/53NtDQ9W/index.m3u8' },
+  { title: 'Tập 86', url: 'https://s4.phim1280.tv/20240929/A0sCbHuS/index.m3u8' },
+  { title: 'Tập 87', url: 'https://s4.phim1280.tv/20240929/elRpS1j0/index.m3u8' },
+  { title: 'Tập 88', url: 'https://s4.phim1280.tv/20240929/KApOlV6H/index.m3u8' },
+  { title: 'Tập 89', url: 'https://s4.phim1280.tv/20240929/GZEXOJOZ/index.m3u8' },
+  { title: 'Tập 90', url: 'https://s4.phim1280.tv/20240929/A4cSJpav/index.m3u8' },
+  { title: 'Tập 91', url: 'https://s4.phim1280.tv/20240929/HkUBETG7/index.m3u8' },
+  { title: 'Tập 92', url: 'https://s4.phim1280.tv/20240929/jKESUHLH/index.m3u8' },
+  { title: 'Tập 93', url: 'https://s4.phim1280.tv/20240929/OpKGFK1z/index.m3u8' },
+  { title: 'Tập 94', url: 'https://s4.phim1280.tv/20240929/oc83PltA/index.m3u8' },
+  { title: 'Tập 95', url: 'https://s4.phim1280.tv/20240929/bPuXSrhe/index.m3u8' },
+  { title: 'Tập 96', url: 'https://s4.phim1280.tv/20240929/MBc6sZsI/index.m3u8' },
+  { title: 'Tập 97', url: 'https://s4.phim1280.tv/20240929/7tCrrJuV/index.m3u8' },
+  { title: 'Tập 98', url: 'https://s4.phim1280.tv/20240929/sDVJ26C9/index.m3u8' },
+  { title: 'Tập 99', url: 'https://s4.phim1280.tv/20240929/4x5DQgsq/index.m3u8' },
+  { title: 'Tập 100', url: 'https://s4.phim1280.tv/20240929/VQOolZDk/index.m3u8' },
+  { title: 'Tập 101', url: 'https://s4.phim1280.tv/20240929/0H4nfcDF/index.m3u8' },
+  { title: 'Tập 102', url: 'https://s4.phim1280.tv/20240929/MDbrjDiX/index.m3u8' },
+  { title: 'Tập 103', url: 'https://s4.phim1280.tv/20240929/h42WKbgP/index.m3u8' },
+  { title: 'Tập 104', url: 'https://s4.phim1280.tv/20240929/vLuQ7Dgn/index.m3u8' },
+  { title: 'Tập 105', url: 'https://s4.phim1280.tv/20240929/p9Fd9iXL/index.m3u8' },
+  { title: 'Tập 106', url: 'https://s4.phim1280.tv/20240929/nkGpD9um/index.m3u8' },
+  { title: 'Tập 107', url: 'https://s4.phim1280.tv/20240929/9qxmbFCz/index.m3u8' },
+  { title: 'Tập 108', url: 'https://s4.phim1280.tv/20240929/p9cXfFON/index.m3u8' },
+  { title: 'Tập 109', url: 'https://s4.phim1280.tv/20240929/M2ISF0ed/index.m3u8' },
+  { title: 'Tập 110', url: 'https://s4.phim1280.tv/20240929/UAixAtF9/index.m3u8' }
+];
+
+    let current = 0;
+    const video = document.getElementById("video");
+    const playlist = document.getElementById("playlist");
+
+    function loadEpisode(index) {
+      current = index;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(episodes[index].url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = episodes[index].url;
+        video.play();
+      }
+      updatePlaylistUI();
+    }
+
+    function updatePlaylistUI() {
+      playlist.innerHTML = '';
+      episodes.forEach((ep, i) => {
+        const btn = document.createElement("div");
+        btn.className = "episode" + (i === current ? " active" : "");
+        btn.innerText = ep.title;
+        btn.onclick = () => loadEpisode(i);
+        playlist.appendChild(btn);
+      });
+    }
+
+    function seek(seconds) {
+      video.currentTime += seconds;
+    }
+
+    video.addEventListener("ended", () => {
+      if (current + 1 < episodes.length) loadEpisode(current + 1);
+    });
+
+    loadEpisode(0);
+  </script>
+</body>
+</html>

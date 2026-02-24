@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+
+    #page-wrapper {
+      transform-origin: center top;
+      transition: transform 0.25s ease;
+    }
+
+    #video-container {
+      position: relative;
+      max-width: 100%;
+    }
+
+    #playlist {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #111;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .episode {
+      cursor: pointer;
+      padding: 5px 10px;
+      background: #333;
+      border-radius: 4px;
+    }
+
+    .episode.active {
+      background: #d00;
+      color: #fff;
+    }
+
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+    }
+
+    .ctrl-btn {
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="page-wrapper">
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s ⏩</button>
+      <button class="ctrl-btn" onclick="zoomOut()">➖</button>
+      <button class="ctrl-btn" onclick="zoomIn()">➕</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script> 
+const episodes = [
+  { title: 'Tập 01', url: 'https://s6.kkphimplayer6.com/20260123/qFes2Ldn/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s6.kkphimplayer6.com/20260123/q0Ehjamd/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s6.kkphimplayer6.com/20260123/2QD1eWja/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s6.kkphimplayer6.com/20260123/9gvLGuze/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s6.kkphimplayer6.com/20260124/Ax6HyGzu/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s6.kkphimplayer6.com/20260124/HyNtej5U/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s6.kkphimplayer6.com/20260124/sXFgdrU7/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s6.kkphimplayer6.com/20260124/Fxt6rWYs/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s6.kkphimplayer6.com/20260125/Py0m3QRz/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s6.kkphimplayer6.com/20260125/q6HQx7Qv/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s6.kkphimplayer6.com/20260126/6E47RyX7/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s6.kkphimplayer6.com/20260127/78xCQOIi/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s6.kkphimplayer6.com/20260128/GUlgu34C/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s6.kkphimplayer6.com/20260128/923wQ5bp/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s6.kkphimplayer6.com/20260130/egdZAsYB/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s6.kkphimplayer6.com/20260130/1CF31XkF/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s6.kkphimplayer6.com/20260130/vgej44pk/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s6.kkphimplayer6.com/20260130/Bu9j5w3j/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s6.kkphimplayer6.com/20260131/VI6ma0fX/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s6.kkphimplayer6.com/20260202/Ec7d93aS/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s6.kkphimplayer6.com/20260202/c4yxyBFN/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s6.kkphimplayer6.com/20260202/jwKmPjWr/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s6.kkphimplayer6.com/20260202/MUqBwpVC/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s6.kkphimplayer6.com/20260202/FhIcT4vE/index.m3u8' }
+];
+
+let current = 0;
+const video = document.getElementById("video");
+const playlist = document.getElementById("playlist");
+const page = document.getElementById("page-wrapper");
+
+function loadEpisode(index) {
+  current = index;
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(episodes[index].url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = episodes[index].url;
+    video.play();
+  }
+  updatePlaylistUI();
+}
+
+function updatePlaylistUI() {
+  playlist.innerHTML = '';
+  episodes.forEach((ep, i) => {
+    const btn = document.createElement("div");
+    btn.className = "episode" + (i === current ? " active" : "");
+    btn.innerText = ep.title;
+    btn.onclick = () => loadEpisode(i);
+    playlist.appendChild(btn);
+  });
+}
+
+function seek(seconds) {
+  video.currentTime += seconds;
+}
+
+video.addEventListener("ended", () => {
+  if (current + 1 < episodes.length) loadEpisode(current + 1);
+});
+
+let zoomLevel = 1;
+const ZOOM_STEP = 0.1;
+const ZOOM_MIN = 0.7;
+const ZOOM_MAX = 1.5;
+
+function applyZoom() {
+  page.style.transform = `scale(${zoomLevel})`;
+}
+
+function zoomIn() {
+  zoomLevel = Math.min(ZOOM_MAX, zoomLevel + ZOOM_STEP);
+  applyZoom();
+}
+
+function zoomOut() {
+  zoomLevel = Math.max(ZOOM_MIN, zoomLevel - ZOOM_STEP);
+  applyZoom();
+}
+
+loadEpisode(0);
+</script>
+</body>
+</html>

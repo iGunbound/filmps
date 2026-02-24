@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+
+    #page-wrapper {
+      transform-origin: center top;
+      transition: transform 0.25s ease;
+    }
+
+    #video-container {
+      position: relative;
+      max-width: 100%;
+    }
+
+    #playlist {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #111;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .episode {
+      cursor: pointer;
+      padding: 5px 10px;
+      background: #333;
+      border-radius: 4px;
+    }
+
+    .episode.active {
+      background: #d00;
+      color: #fff;
+    }
+
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+    }
+
+    .ctrl-btn {
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="page-wrapper">
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s ⏩</button>
+      <button class="ctrl-btn" onclick="zoomOut()">➖</button>
+      <button class="ctrl-btn" onclick="zoomIn()">➕</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+const episodes = [
+  { title: 'Tập 01', url: 'https://s3.phim1280.tv/20240713/MKeR0rxz/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s3.phim1280.tv/20240713/LDXpGgr9/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s3.phim1280.tv/20240713/ECspoIpI/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s3.phim1280.tv/20240713/BvKz4ihe/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s3.phim1280.tv/20240713/kTQ8KSyQ/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s3.phim1280.tv/20240713/xwX6wqtv/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s3.phim1280.tv/20240713/vWaWkeeA/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s3.phim1280.tv/20240713/27BRjzvW/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s3.phim1280.tv/20240713/Qnsounfg/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s3.phim1280.tv/20240713/CITOxEdW/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s3.phim1280.tv/20240713/vFxLpRq6/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s3.phim1280.tv/20240713/YHXFM0Md/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s3.phim1280.tv/20240713/FJr7QN2M/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s3.phim1280.tv/20240713/fgQBYxfO/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s3.phim1280.tv/20240713/WSmcqYuO/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s3.phim1280.tv/20240713/fB0iiKnq/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s3.phim1280.tv/20240713/wK8xxOVS/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s3.phim1280.tv/20240713/iAUwrl55/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s3.phim1280.tv/20240713/UUOm0z2o/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s3.phim1280.tv/20240713/QMGtyVuX/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s3.phim1280.tv/20240713/dcnnR7wh/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s3.phim1280.tv/20240713/0RkGtqPk/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s3.phim1280.tv/20240713/w063C0zJ/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s3.phim1280.tv/20240713/y3dWdCNf/index.m3u8' },
+  { title: 'Tập 25', url: 'https://s3.phim1280.tv/20240713/Y3von3Yd/index.m3u8' },
+  { title: 'Tập 26', url: 'https://s3.phim1280.tv/20240713/aJgSpZmJ/index.m3u8' },
+  { title: 'Tập 27', url: 'https://s3.phim1280.tv/20240713/gIaM4Clq/index.m3u8' },
+  { title: 'Tập 28', url: 'https://s3.phim1280.tv/20240713/A9aTE7ho/index.m3u8' },
+  { title: 'Tập 29', url: 'https://s3.phim1280.tv/20240713/2oDn4E97/index.m3u8' },
+  { title: 'Tập 30', url: 'https://s3.phim1280.tv/20240713/7cOrrA7n/index.m3u8' },
+  { title: 'Tập 31', url: 'https://s3.phim1280.tv/20240713/sW0b1vZD/index.m3u8' },
+  { title: 'Tập 32', url: 'https://s3.phim1280.tv/20240713/RllEIKyW/index.m3u8' },
+  { title: 'Tập 33', url: 'https://s3.phim1280.tv/20240713/hap1PxG9/index.m3u8' },
+  { title: 'Tập 34', url: 'https://s3.phim1280.tv/20240713/0ernk31A/index.m3u8' },
+  { title: 'Tập 35', url: 'https://s3.phim1280.tv/20240713/p1IZ485M/index.m3u8' },
+  { title: 'Tập 36', url: 'https://s3.phim1280.tv/20240713/TOjJW4WG/index.m3u8' },
+  { title: 'Tập 01', url: 'https://s4.phim1280.tv/20241118/ddigX7CH/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s4.phim1280.tv/20241118/nLz0fYDN/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s4.phim1280.tv/20241118/BEkiBF8w/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s4.phim1280.tv/20241118/RvbmS20x/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s4.phim1280.tv/20241118/9dtOr9VT/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s4.phim1280.tv/20241118/29DEiY0n/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s4.phim1280.tv/20241118/ASj7uhJQ/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s4.phim1280.tv/20241118/cmWiFhY6/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s4.phim1280.tv/20241118/vBgAkplF/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s4.phim1280.tv/20241118/TiFP8B5S/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s4.phim1280.tv/20241118/Ltcr4voY/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s4.phim1280.tv/20241118/hWAvZlHG/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s4.phim1280.tv/20241118/B23r6Q7k/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s4.phim1280.tv/20241118/sLMJxhSF/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s4.phim1280.tv/20241118/6ThjbT7t/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s4.phim1280.tv/20241118/GaXZDC3A/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s4.phim1280.tv/20241118/1UaPGGfD/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s4.phim1280.tv/20241118/nf55FNmZ/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s4.phim1280.tv/20241118/dJ6MlY5w/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s4.phim1280.tv/20241118/ARcRuVEF/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s4.phim1280.tv/20241118/ZRA629fy/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s4.phim1280.tv/20241118/7V35Svk4/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s4.phim1280.tv/20241118/OLAyJI2V/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s4.phim1280.tv/20241118/Yhe3NXrG/index.m3u8' },
+  { title: 'Tập 25', url: 'https://s4.phim1280.tv/20241118/lLWvCXV0/index.m3u8' },
+  { title: 'Tập 26', url: 'https://s4.phim1280.tv/20241118/qkvljD3e/index.m3u8' },
+  { title: 'Tập 27', url: 'https://s4.phim1280.tv/20241118/Z3WYFNrZ/index.m3u8' },
+  { title: 'Tập 28', url: 'https://s4.phim1280.tv/20241118/jc2XFuS6/index.m3u8' },
+  { title: 'Tập 29', url: 'https://s4.phim1280.tv/20241118/t5uD4sJs/index.m3u8' },
+  { title: 'Tập 30', url: 'https://s4.phim1280.tv/20241118/72992iuK/index.m3u8' },
+  { title: 'Tập 31', url: 'https://s4.phim1280.tv/20241118/waTLU1AE/index.m3u8' },
+  { title: 'Tập 32', url: 'https://s4.phim1280.tv/20241118/ZBSO73WT/index.m3u8' },
+  { title: 'Tập 33', url: 'https://s4.phim1280.tv/20241118/rNcWmmJz/index.m3u8' },
+  { title: 'Tập 34', url: 'https://s4.phim1280.tv/20241118/Bwd38Dew/index.m3u8' },
+  { title: 'Tập 35', url: 'https://s4.phim1280.tv/20241118/pEVR1OZT/index.m3u8' },
+  { title: 'Tập 36', url: 'https://s4.phim1280.tv/20241118/yM2RusM2/index.m3u8' },
+  { title: 'Tập 37', url: 'https://s4.phim1280.tv/20241118/r5cMcgFy/index.m3u8' },
+  { title: 'Tập 38', url: 'https://s4.phim1280.tv/20241118/0nEynoTs/index.m3u8' },
+  { title: 'Tập 39', url: 'https://s4.phim1280.tv/20241118/FWBI5CWd/index.m3u8' },
+  { title: 'Tập 40', url: 'https://s4.phim1280.tv/20241118/d7gjojrn/index.m3u8' },
+  { title: 'Tập 41', url: 'https://s4.phim1280.tv/20241118/ke8oyVPO/index.m3u8' }
+];
+
+
+let current = 0;
+const video = document.getElementById("video");
+const playlist = document.getElementById("playlist");
+const page = document.getElementById("page-wrapper");
+
+function loadEpisode(index) {
+  current = index;
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(episodes[index].url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = episodes[index].url;
+    video.play();
+  }
+  updatePlaylistUI();
+}
+
+function updatePlaylistUI() {
+  playlist.innerHTML = '';
+  episodes.forEach((ep, i) => {
+    const btn = document.createElement("div");
+    btn.className = "episode" + (i === current ? " active" : "");
+    btn.innerText = ep.title;
+    btn.onclick = () => loadEpisode(i);
+    playlist.appendChild(btn);
+  });
+}
+
+function seek(seconds) {
+  video.currentTime += seconds;
+}
+
+video.addEventListener("ended", () => {
+  if (current + 1 < episodes.length) loadEpisode(current + 1);
+});
+
+let zoomLevel = 1;
+const ZOOM_STEP = 0.1;
+const ZOOM_MIN = 0.7;
+const ZOOM_MAX = 1.5;
+
+function applyZoom() {
+  page.style.transform = `scale(${zoomLevel})`;
+}
+
+function zoomIn() {
+  zoomLevel = Math.min(ZOOM_MAX, zoomLevel + ZOOM_STEP);
+  applyZoom();
+}
+
+function zoomOut() {
+  zoomLevel = Math.max(ZOOM_MIN, zoomLevel - ZOOM_STEP);
+  applyZoom();
+}
+
+loadEpisode(0);
+</script>
+</body>
+</html>

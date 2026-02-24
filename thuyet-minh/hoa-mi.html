@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+    #video-container { position: relative; max-width: 100%; }
+    #playlist { max-height: 300px; overflow-y: auto; background: #111; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .episode { cursor: pointer; padding: 5px 10px; background: #333; border-radius: 4px; }
+    .episode.active { background: #d00; color: #fff; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 2; }
+    .ctrl-btn { background: rgba(0,0,0,0.5); border: none; color: white; padding: 6px 10px; margin: 0 5px; cursor: pointer; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">⏪ 30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+const episodes = [
+  { title: 'Tập 01', url: 'https://s6.kkphimplayer6.com/20251213/ZONErXdE/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s6.kkphimplayer6.com/20251213/EilHSQ4z/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s6.kkphimplayer6.com/20251213/ZcO0tAus/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s6.kkphimplayer6.com/20251213/Zqli8tVp/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s6.kkphimplayer6.com/20251213/HTcWeZ0q/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s6.kkphimplayer6.com/20251213/iLILd6aY/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s6.kkphimplayer6.com/20251213/81f5w5j6/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s6.kkphimplayer6.com/20251213/GdE4f1eP/index.m3u8' },
+  { title: 'Tập 09', url: 'https://s6.kkphimplayer6.com/20251213/RnrpsPBg/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s6.kkphimplayer6.com/20251213/oVXn5Gxt/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s6.kkphimplayer6.com/20251213/Cr4RQBoA/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s6.kkphimplayer6.com/20251213/mWmgIqKT/index.m3u8' },
+  { title: 'Tập 13', url: 'https://s6.kkphimplayer6.com/20251213/xE3060BN/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s6.kkphimplayer6.com/20251213/SYMYFbkL/index.m3u8' },
+  { title: 'Tập 15', url: 'https://s6.kkphimplayer6.com/20251213/FlgCSIb7/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s6.kkphimplayer6.com/20251213/bXeOlnrO/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s6.kkphimplayer6.com/20251213/kicohgue/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s6.kkphimplayer6.com/20251213/h7ecgaFL/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s6.kkphimplayer6.com/20251213/hVGqSzIx/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s6.kkphimplayer6.com/20251213/I8GcwscG/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s6.kkphimplayer6.com/20251213/iliHRXFa/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s6.kkphimplayer6.com/20251213/LK3jy6Ye/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s6.kkphimplayer6.com/20251213/kzsore4R/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s6.kkphimplayer6.com/20251213/zCXg7Cxe/index.m3u8' },
+  { title: 'Tập 25', url: 'https://s6.kkphimplayer6.com/20251213/U2NTi3bm/index.m3u8' },
+  { title: 'Tập 26', url: 'https://s6.kkphimplayer6.com/20251213/L1uaw4vG/index.m3u8' },
+  { title: 'Tập 27', url: 'https://s6.kkphimplayer6.com/20251213/FId7KnHY/index.m3u8' },
+  { title: 'Tập 28', url: 'https://s6.kkphimplayer6.com/20251213/lIztnob1/index.m3u8' },
+  { title: 'Tập 29', url: 'https://s6.kkphimplayer6.com/20251213/pV1C0I3C/index.m3u8' },
+  { title: 'Tập 30', url: 'https://s6.kkphimplayer6.com/20251213/HqX3KM7H/index.m3u8' },
+  { title: 'Tập 31', url: 'https://s6.kkphimplayer6.com/20251214/MeR1pOTr/index.m3u8' },
+  { title: 'Tập 32', url: 'https://s6.kkphimplayer6.com/20251213/hf9nu2OB/index.m3u8' },
+  { title: 'Tập 33', url: 'https://s6.kkphimplayer6.com/20251214/Tu1PwS9L/index.m3u8' },
+  { title: 'Tập 34', url: 'https://s6.kkphimplayer6.com/20251214/lr8V4MJ4/index.m3u8' },
+  { title: 'Tập 35', url: 'https://s6.kkphimplayer6.com/20251213/lLBjpVwH/index.m3u8' },
+  { title: 'Tập 36', url: 'https://s6.kkphimplayer6.com/20251214/SAECpbxt/index.m3u8' },
+  { title: 'Tập 37', url: 'https://s6.kkphimplayer6.com/20251214/W4IXLBk8/index.m3u8' },
+  { title: 'Tập 38', url: 'https://s6.kkphimplayer6.com/20251214/pKzKWhuB/index.m3u8' },
+];
+
+    let current = 0;
+    const video = document.getElementById("video");
+    const playlist = document.getElementById("playlist");
+
+    function loadEpisode(index) {
+      current = index;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(episodes[index].url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = episodes[index].url;
+        video.play();
+      }
+      updatePlaylistUI();
+    }
+
+    function updatePlaylistUI() {
+      playlist.innerHTML = '';
+      episodes.forEach((ep, i) => {
+        const btn = document.createElement("div");
+        btn.className = "episode" + (i === current ? " active" : "");
+        btn.innerText = ep.title;
+        btn.onclick = () => loadEpisode(i);
+        playlist.appendChild(btn);
+      });
+    }
+
+    function seek(seconds) {
+      video.currentTime += seconds;
+    }
+
+    video.addEventListener("ended", () => {
+      if (current + 1 < episodes.length) loadEpisode(current + 1);
+    });
+
+    loadEpisode(0);
+  </script>
+</body>
+</html>

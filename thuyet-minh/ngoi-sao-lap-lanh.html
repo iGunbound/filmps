@@ -1,0 +1,263 @@
+<div id="player-wrapper">
+
+<!-- ====== CHỈ DÁN LINK Ở ĐÂY ====== -->
+<script>
+const rawEpisodes = `
+Tập 01|https://s3.phim1280.tv/20240607/jwi5VTb5/index.m3u8
+Tập 02|https://s3.phim1280.tv/20240607/200kOSOC/index.m3u8
+Tập 03|https://s3.phim1280.tv/20240607/cLOv5TyL/index.m3u8
+Tập 04|https://s3.phim1280.tv/20240607/HLKaZjoB/index.m3u8
+Tập 05|https://s3.phim1280.tv/20240607/hOa1LalV/index.m3u8
+Tập 06|https://s3.phim1280.tv/20240607/kX4K9lRB/index.m3u8
+Tập 07|https://s3.phim1280.tv/20240607/AynfCqva/index.m3u8
+Tập 08|https://s3.phim1280.tv/20240607/qda0TrJi/index.m3u8
+Tập 09|https://s3.phim1280.tv/20240607/F8RnIYrK/index.m3u8
+Tập 10|https://s3.phim1280.tv/20240607/fDwFA7Mf/index.m3u8
+Tập 11|https://s3.phim1280.tv/20240607/jGytuiOm/index.m3u8
+Tập 12|https://s3.phim1280.tv/20240607/SV7mYmew/index.m3u8
+Tập 13|https://s3.phim1280.tv/20240607/aZk34MBC/index.m3u8
+Tập 14|https://s3.phim1280.tv/20240607/kC5vlOqv/index.m3u8
+Tập 15|https://s3.phim1280.tv/20240607/iXN67T9o/index.m3u8
+Tập 16|https://s3.phim1280.tv/20240607/EgzqCp25/index.m3u8
+Tập 17|https://s3.phim1280.tv/20240607/jCQceo6X/index.m3u8
+Tập 18|https://s3.phim1280.tv/20240607/Pk1d8Pgr/index.m3u8
+Tập 19|https://s3.phim1280.tv/20240607/XeJrTRky/index.m3u8
+Tập 20|https://s3.phim1280.tv/20240607/vT9OxfvQ/index.m3u8
+Tập 21|https://s3.phim1280.tv/20240607/Wp0c5epp/index.m3u8
+Tập 22|https://s3.phim1280.tv/20240607/EycSbMBm/index.m3u8
+Tập 23|https://s3.phim1280.tv/20240607/plNyVP8I/index.m3u8
+Tập 24|https://s3.phim1280.tv/20240607/oHIGgMF7/index.m3u8
+
+`;
+</script>
+<!-- ================================ -->
+
+<div class="video-container" id="videoContainer">
+
+<video id="video" controls></video>
+
+<div class="controls-overlay" id="controlsOverlay">
+<button onclick="prevEpisode()">⏮</button>
+<button onclick="skip(-30)">⏪ 30s</button>
+<button onclick="skip(30)">30s ⏩</button>
+<button onclick="nextEpisode()">⏭</button>
+<button onclick="toggleCinema()">🔍</button>
+<button onclick="toggleFull()">🖥</button>
+</div>
+
+</div>
+
+<div id="episode-list"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<style>
+#player-wrapper{
+max-width:1200px;
+margin:auto;
+}
+
+.video-container{
+position:relative;
+width:100%;
+background:#000;
+overflow:hidden;
+}
+
+video{
+width:100%;
+height:auto;
+display:block;
+background:#000;
+}
+
+.controls-overlay{
+position:absolute;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+display:flex;
+gap:10px;
+background:rgba(0,0,0,0.6);
+padding:10px 15px;
+border-radius:10px;
+transition:opacity 0.3s ease;
+}
+
+.controls-overlay button{
+background:#111;
+color:#fff;
+border:none;
+padding:8px 12px;
+cursor:pointer;
+border-radius:6px;
+}
+
+.controls-hidden{
+opacity:0;
+pointer-events:none;
+}
+
+#episode-list{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+padding:15px 0;
+justify-content:center;
+}
+
+#episode-list button{
+padding:8px 14px;
+background:#222;
+color:#fff;
+border:none;
+cursor:pointer;
+border-radius:4px;
+}
+
+#episode-list button.active{
+background:#e50914;
+}
+
+/* ===== FULL CINEMA MODE ===== */
+.cinema-mode{
+position:fixed !important;
+top:0;
+left:0;
+width:100vw !important;
+height:100vh !important;
+background:#000;
+z-index:99999;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.cinema-mode video{
+width:100vw !important;
+height:100vh !important;
+object-fit:contain;
+}
+
+.cinema-mode #episode-list{
+position:absolute;
+bottom:0;
+background:rgba(0,0,0,0.85);
+width:100%;
+padding:15px;
+}
+</style>
+
+<script>
+let video = document.getElementById("video");
+let episodeList = document.getElementById("episode-list");
+let wrapper = document.getElementById("videoContainer");
+let overlay = document.getElementById("controlsOverlay");
+
+let episodes = [];
+let currentIndex = 0;
+let hls;
+let hideTimeout;
+
+/* PARSE EPISODES */
+function parseEpisodes(){
+let lines = rawEpisodes.trim().split("\n");
+lines.forEach(line=>{
+let parts = line.split("|");
+if(parts.length===2){
+episodes.push({
+title: parts[0].trim(),
+url: parts[1].trim()
+});
+}
+});
+renderEpisodes();
+loadEpisode(0);
+}
+
+function renderEpisodes(){
+episodeList.innerHTML="";
+episodes.forEach((ep,index)=>{
+let btn=document.createElement("button");
+btn.textContent=ep.title;
+btn.onclick=()=>loadEpisode(index);
+if(index===0) btn.classList.add("active");
+episodeList.appendChild(btn);
+});
+}
+
+function loadEpisode(index){
+currentIndex=index;
+
+document.querySelectorAll("#episode-list button")
+.forEach(btn=>btn.classList.remove("active"));
+document.querySelectorAll("#episode-list button")[index]
+.classList.add("active");
+
+if(hls){ hls.destroy(); }
+
+if(Hls.isSupported()){
+hls=new Hls();
+hls.loadSource(episodes[index].url);
+hls.attachMedia(video);
+}else{
+video.src=episodes[index].url;
+}
+
+video.play();
+}
+
+function nextEpisode(){
+if(currentIndex < episodes.length-1){
+loadEpisode(currentIndex+1);
+}
+}
+
+function prevEpisode(){
+if(currentIndex > 0){
+loadEpisode(currentIndex-1);
+}
+}
+
+video.addEventListener("ended",()=>{
+nextEpisode();
+});
+
+function skip(seconds){
+video.currentTime += seconds;
+}
+
+/* FULLSCREEN */
+function toggleFull(){
+if(!document.fullscreenElement){
+wrapper.requestFullscreen();
+}else{
+document.exitFullscreen();
+}
+}
+
+/* CINEMA MODE */
+function toggleCinema(){
+wrapper.classList.toggle("cinema-mode");
+document.body.style.overflow =
+wrapper.classList.contains("cinema-mode") ? "hidden" : "auto";
+}
+
+/* AUTO HIDE AFTER 3s */
+function showControls(){
+overlay.classList.remove("controls-hidden");
+clearTimeout(hideTimeout);
+hideTimeout = setTimeout(()=>{
+overlay.classList.add("controls-hidden");
+},3000);
+}
+
+wrapper.addEventListener("mousemove", showControls);
+wrapper.addEventListener("touchstart", showControls);
+
+parseEpisodes();
+showControls();
+</script>

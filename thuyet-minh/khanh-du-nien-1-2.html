@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Phát Video</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #000; color: #fff; }
+    #video-container { position: relative; width: 100%; max-width: 100%; background: #000; }
+    video { width: 100%; height: auto; background: #000; }
+    #controls { margin: 10px; text-align: center; }
+    #episode-list { display: flex; flex-wrap: wrap; padding: 10px; gap: 5px; justify-content: center; }
+    .episode-btn {
+      padding: 8px 12px; background: #444; border: none; color: #fff;
+      cursor: pointer; border-radius: 4px;
+    }
+    .episode-btn.active { background: #d00; }
+    .skip-btn {
+      padding: 5px 10px;
+      margin: 5px;
+      font-size: 14px;
+      border: none;
+      border-radius: 3px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="video" controls></video>
+    <div id="controls">
+      <button class="skip-btn" onclick="skip(-30)">⏪ 30s</button>
+      <button class="skip-btn" onclick="skip(30)">⏩ 30s</button>
+    </div>
+  </div>
+  <div id="episode-list"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const episodes = [
+      "https://s3.phim1280.tv/20240515/DqOrIneJ/index.m3u8",
+      "https://s3.phim1280.tv/20240515/RifVfSyp/index.m3u8",
+      "https://s3.phim1280.tv/20240515/LAY1EmDV/index.m3u8",
+      "https://s3.phim1280.tv/20240515/UgWGjheO/index.m3u8",
+      "https://s3.phim1280.tv/20240515/BIjY0Zr2/index.m3u8",
+      "https://s3.phim1280.tv/20240515/55t6rQl8/index.m3u8",
+      "https://s3.phim1280.tv/20240515/wSn7b7nv/index.m3u8",
+      "https://s3.phim1280.tv/20240515/YPLVSLsI/index.m3u8",
+      "https://s3.phim1280.tv/20240515/1l8tcm7r/index.m3u8",
+      "https://s3.phim1280.tv/20240515/QfPFzaqm/index.m3u8",
+      "https://s3.phim1280.tv/20240515/1vBsX9yu/index.m3u8",
+      "https://s3.phim1280.tv/20240515/SV6icX00/index.m3u8",
+      "https://s3.phim1280.tv/20240515/53kIkmqS/index.m3u8",
+      "https://s3.phim1280.tv/20240515/eSFiL5hH/index.m3u8",
+      "https://s3.phim1280.tv/20240515/7z0emrYG/index.m3u8",
+      "https://s3.phim1280.tv/20240515/s40P9puK/index.m3u8",
+      "https://s3.phim1280.tv/20240515/lBdLTdGP/index.m3u8",
+      "https://s3.phim1280.tv/20240515/yh7Nj0nB/index.m3u8",
+      "https://s3.phim1280.tv/20240515/oIshsQBw/index.m3u8",
+      "https://s3.phim1280.tv/20240515/mwElX0MQ/index.m3u8",
+      "https://s3.phim1280.tv/20240515/Nmtc7FSi/index.m3u8",
+      "https://s3.phim1280.tv/20240515/xgAIli1W/index.m3u8",
+      "https://s3.phim1280.tv/20240515/1qK89LaH/index.m3u8",
+      "https://s3.phim1280.tv/20240515/xfh0kmgZ/index.m3u8",
+      "https://s3.phim1280.tv/20240515/c1EjRCy0/index.m3u8",
+      "https://s3.phim1280.tv/20240515/gZX3sYfQ/index.m3u8",
+      "https://s3.phim1280.tv/20240515/e84ZXKwg/index.m3u8",
+      "https://s3.phim1280.tv/20240515/fRpzHXpj/index.m3u8",
+      "https://s3.phim1280.tv/20240515/R9sioKkK/index.m3u8",
+      "https://s3.phim1280.tv/20240515/uySP6LU1/index.m3u8",
+      "https://s3.phim1280.tv/20240515/AWrjdaj4/index.m3u8",
+      "https://s3.phim1280.tv/20240625/PjfUypsm/index.m3u8",
+      "https://s3.phim1280.tv/20240515/bX3tbh9y/index.m3u8",
+      "https://s3.phim1280.tv/20240515/38N8AHks/index.m3u8",
+      "https://s3.phim1280.tv/20240515/077G2jmu/index.m3u8",
+      "https://s3.phim1280.tv/20240515/Gyo3F9yj/index.m3u8",
+      "https://s3.phim1280.tv/20240515/I5hQnAA7/index.m3u8",
+      "https://s3.phim1280.tv/20240515/dSyAkZzF/index.m3u8",
+      "https://s3.phim1280.tv/20240515/2yMek5yd/index.m3u8",
+      "https://s3.phim1280.tv/20240515/McI6r3Nn/index.m3u8",
+      "https://s3.phim1280.tv/20240515/Hju5E9On/index.m3u8",
+      "https://s3.phim1280.tv/20240515/BaG7AEGk/index.m3u8",
+      "https://s3.phim1280.tv/20240515/XknNQMwa/index.m3u8",
+      "https://s3.phim1280.tv/20240515/4qACwW9u/index.m3u8",
+      "https://s3.phim1280.tv/20240515/CoP8mUkk/index.m3u8",
+      "https://s3.phim1280.tv/20240515/FSd2z6mn/index.m3u8",
+      "https://s3.phim1280.tv/20240516/gPNU7qYe/index.m3u8",
+      "https://s3.phim1280.tv/20240516/9Jkwtt1n/index.m3u8",
+      "https://s3.phim1280.tv/20240516/OQ7LNUia/index.m3u8",
+      "https://s3.phim1280.tv/20240516/k7prJ0Wm/index.m3u8",
+      "https://s3.phim1280.tv/20240518/NO1KfNWf/index.m3u8",
+      "https://s3.phim1280.tv/20240518/ndlMv5Ol/index.m3u8",
+      "https://s3.phim1280.tv/20240519/PQGOpy9D/index.m3u8",
+      "https://s3.phim1280.tv/20240520/Giemkq5N/index.m3u8",
+      "https://s3.phim1280.tv/20240520/MFagk6zp/index.m3u8",
+      "https://s3.phim1280.tv/20240520/4KMwxbLF/index.m3u8",
+      "https://s3.phim1280.tv/20240521/uauCkL17/index.m3u8",
+      "https://s3.phim1280.tv/20240521/YCoHuQ2I/index.m3u8",
+      "https://s3.phim1280.tv/20240524/Da1FcNgU/index.m3u8",
+      "https://s3.phim1280.tv/20240524/sR4frMW7/index.m3u8",
+      "https://s3.phim1280.tv/20240524/2nyBbDqU/index.m3u8",
+      "https://s3.phim1280.tv/20240524/vyGX57xv/index.m3u8",
+      "https://s3.phim1280.tv/20240524/AhMyYm1R/index.m3u8",
+      "https://s3.phim1280.tv/20240524/0Ur0V6XW/index.m3u8",
+      "https://s3.phim1280.tv/20240529/bDKAmPyt/index.m3u8",
+      "https://s3.phim1280.tv/20240529/B5nlH4Qo/index.m3u8",
+      "https://s3.phim1280.tv/20240529/IApn4ouL/index.m3u8",
+      "https://s3.phim1280.tv/20240529/exm3MPwP/index.m3u8",
+      "https://s3.phim1280.tv/20240529/6wQv3i7o/index.m3u8",
+      "https://s3.phim1280.tv/20240529/ffJvHwVX/index.m3u8",
+      "https://s3.phim1280.tv/20240530/OrqrJuq0/index.m3u8",
+      "https://s3.phim1280.tv/20240530/55b1fQtf/index.m3u8",
+      "https://s3.phim1280.tv/20240530/wszDZ3MM/index.m3u8",
+      "https://s3.phim1280.tv/20240530/UurkFFzP/index.m3u8",
+      "https://s3.phim1280.tv/20240530/xRxxxIHP/index.m3u8",
+      "https://s3.phim1280.tv/20240530/wCfwRdBq/index.m3u8",
+      "https://s3.phim1280.tv/20240602/pwqmhdlN/index.m3u8",
+      "https://s3.phim1280.tv/20240602/PRo1X0qk/index.m3u8",
+      "https://s3.phim1280.tv/20240602/cnxlRnmp/index.m3u8",
+      "https://s3.phim1280.tv/20240602/aISICbrl/index.m3u8",
+      "https://s3.phim1280.tv/20240603/ekYdhv7i/index.m3u8",
+      "https://s3.phim1280.tv/20240603/BmtydOPD/index.m3u8"
+    ];
+
+    const video = document.getElementById('video');
+    let currentEpisode = 0;
+
+    function loadEpisode(index) {
+      currentEpisode = index;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(episodes[index]);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = episodes[index];
+        video.play();
+      }
+      document.querySelectorAll('.episode-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+
+    function skip(seconds) {
+      video.currentTime += seconds;
+    }
+
+    function createEpisodeButtons() {
+      const list = document.getElementById('episode-list');
+      episodes.forEach((_, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = `Tập ${i + 1}`;
+        btn.className = 'episode-btn';
+        btn.onclick = () => loadEpisode(i);
+        list.appendChild(btn);
+      });
+    }
+
+    video.addEventListener('ended', () => {
+      if (currentEpisode + 1 < episodes.length) loadEpisode(currentEpisode + 1);
+    });
+
+    createEpisodeButtons();
+    loadEpisode(0);
+  </script>
+</body>
+</html>

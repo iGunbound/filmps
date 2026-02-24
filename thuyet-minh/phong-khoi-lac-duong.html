@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trình phát video</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+    #video-container { position: relative; max-width: 100%; }
+    #playlist { max-height: 300px; overflow-y: auto; background: #111; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .episode { cursor: pointer; padding: 5px 10px; background: #333; border-radius: 4px; }
+    .episode.active { background: #d00; color: #fff; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 2; }
+    .ctrl-btn { background: rgba(0,0,0,0.5); border: none; color: white; padding: 6px 10px; margin: 0 5px; cursor: pointer; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="video" controls autoplay playsinline width="100%" height="auto"></video>
+    <div id="controls">
+      <button class="ctrl-btn" onclick="seek(-30)">30s</button>
+      <button class="ctrl-btn" onclick="seek(30)">30s</button>
+    </div>
+  </div>
+  <div id="playlist"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const episodes = [
+  { title: 'Tập 01', url: 'https://s1.phim1280.tv/20240121/btSbWaCx/index.m3u8' },
+  { title: 'Tập 02', url: 'https://s1.phim1280.tv/20240121/HRZjgEnQ/index.m3u8' },
+  { title: 'Tập 03', url: 'https://s1.phim1280.tv/20240121/CIQRdXcU/index.m3u8' },
+  { title: 'Tập 04', url: 'https://s1.phim1280.tv/20240121/CJUbN9aZ/index.m3u8' },
+  { title: 'Tập 05', url: 'https://s1.phim1280.tv/20240121/9EuNDf4v/index.m3u8' },
+  { title: 'Tập 06', url: 'https://s1.phim1280.tv/20240121/XcaDTf09/index.m3u8' },
+  { title: 'Tập 07', url: 'https://s1.phim1280.tv/20240121/BHLlqD8I/index.m3u8' },
+  { title: 'Tập 08', url: 'https://s1.phim1280.tv/20240121/M0KLlk3I/index.m3u8' },
+  { title: 'Tập 10', url: 'https://s1.phim1280.tv/20240121/K9rbKL80/index.m3u8' },
+  { title: 'Tập 11', url: 'https://s1.phim1280.tv/20240121/cqFHRhvy/index.m3u8' },
+  { title: 'Tập 12', url: 'https://s1.phim1280.tv/20240121/Bb158TBj/index.m3u8' },
+  { title: 'Tập 14', url: 'https://s1.phim1280.tv/20240121/8b7l72bJ/index.m3u8' },
+  { title: 'Tập 16', url: 'https://s1.phim1280.tv/20240121/QXyp9UDS/index.m3u8' },
+  { title: 'Tập 17', url: 'https://s1.phim1280.tv/20240121/Q1hjtTgk/index.m3u8' },
+  { title: 'Tập 18', url: 'https://s1.phim1280.tv/20240121/b30IqfWE/index.m3u8' },
+  { title: 'Tập 19', url: 'https://s1.phim1280.tv/20240121/w5AndN6h/index.m3u8' },
+  { title: 'Tập 20', url: 'https://s1.phim1280.tv/20240121/XjtzeqeI/index.m3u8' },
+  { title: 'Tập 21', url: 'https://s1.phim1280.tv/20240121/Fq4XAgQP/index.m3u8' },
+  { title: 'Tập 22', url: 'https://s1.phim1280.tv/20240121/Y5IK4kO9/index.m3u8' },
+  { title: 'Tập 23', url: 'https://s1.phim1280.tv/20240121/AUhxotjK/index.m3u8' },
+  { title: 'Tập 24', url: 'https://s1.phim1280.tv/20240121/Zn0qjl2e/index.m3u8' },
+  { title: 'Tập 25', url: 'https://s1.phim1280.tv/20240121/pX7tBV5p/index.m3u8' },
+  { title: 'Tập 26', url: 'https://s1.phim1280.tv/20240121/D6RU4uA0/index.m3u8' },
+  { title: 'Tập 27', url: 'https://s1.phim1280.tv/20240121/bMMNnRaL/index.m3u8' },
+  { title: 'Tập 28', url: 'https://s1.phim1280.tv/20240121/atOq2k97/index.m3u8' },
+  { title: 'Tập 29', url: 'https://s1.phim1280.tv/20240121/9I6d1MbG/index.m3u8' },
+  { title: 'Tập 30', url: 'https://s1.phim1280.tv/20240121/PtZlS2hN/index.m3u8' },
+  { title: 'Tập 32', url: 'https://s1.phim1280.tv/20240121/ESst8SXT/index.m3u8' },
+  { title: 'Tập 33', url: 'https://s1.phim1280.tv/20240121/P9YyKPmy/index.m3u8' },
+  { title: 'Tập 34', url: 'https://s1.phim1280.tv/20240121/Ilbhsjty/index.m3u8' },
+  { title: 'Tập 35', url: 'https://s1.phim1280.tv/20240121/dLWjKEY2/index.m3u8' },
+  { title: 'Tập 36', url: 'https://s1.phim1280.tv/20240121/gFipnIDP/index.m3u8' },
+  { title: 'Tập 37', url: 'https://s1.phim1280.tv/20240121/FinPNZP2/index.m3u8' },
+  { title: 'Tập 38', url: 'https://s1.phim1280.tv/20240121/OTTRAdgN/index.m3u8' },
+  { title: 'Tập 39', url: 'https://s1.phim1280.tv/20240121/CGQ4MBKQ/index.m3u8' }
+];
+
+    let current = 0;
+    const video = document.getElementById("video");
+    const playlist = document.getElementById("playlist");
+
+    function loadEpisode(index) {
+      current = index;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(episodes[index].url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = episodes[index].url;
+        video.play();
+      }
+      updatePlaylistUI();
+    }
+
+    function updatePlaylistUI() {
+      playlist.innerHTML = '';
+      episodes.forEach((ep, i) => {
+        const btn = document.createElement("div");
+        btn.className = "episode" + (i === current ? " active" : "");
+        btn.innerText = ep.title;
+        btn.onclick = () => loadEpisode(i);
+        playlist.appendChild(btn);
+      });
+    }
+
+    function seek(seconds) {
+      video.currentTime += seconds;
+    }
+
+    video.addEventListener("ended", () => {
+      if (current + 1 < episodes.length) loadEpisode(current + 1);
+    });
+
+    loadEpisode(0);
+  </script>
+</body>
+</html>
